@@ -1,0 +1,127 @@
+.rotate (@rotation) {
+	transform:rotate(@rotation);
+	-ms-transform:rotate(@rotation); /* IE 9 */
+	-webkit-transform:rotate(@rotation); /* Safari and Chrome */
+}
+
+/*Define colors*/
+@maroon : #5F0000;
+@red : #AA0502;
+@ochre : #A25900;
+@darkest_brown : #443A1D;
+@dark_brown : #4A3317;
+@brown : #6f6049;
+@tan : #BEA582;
+@beige : #E3D2B8;
+@olive : #838A40;
+
+/*Board Height*/
+@board-size : 480px;
+
+body {
+	background-color: @brown;
+	margin:0px;
+	padding:50px;
+	font-family: 'Oswald', sans-serif;
+}
+
+h1 {
+	font-family: 'Oswald', sans-serif;
+	color: @olive;
+	font-size: 5em;
+	padding:10px;
+	margin:0px;
+	text-align: center;
+}
+
+h2 {
+	text-align: center;
+}
+
+#container {
+	margin: 0px auto;
+	width: 1000px;
+}
+
+.board {
+	width: @board-size;
+	height: @board-size;
+	border: 3px solid none;
+	border-radius: 15px;
+	padding: 20px;
+	margin: 0px;
+	float:left;
+	clear: left;
+	background-color: #443A1D;
+	background-image: url('../img/wood.jpg');
+	box-shadow: 0px 0px 15px rgba(0,0,0,0.7);
+}
+
+.sideboard {
+	background-color: #BEA582;
+	width: 420px;
+	height: @board-size;
+	padding: 0px 20px 40px 20px;
+	float: right;
+	clear: right;
+	border-radius: 15px;
+}
+
+.board_space {
+	height:100px;
+	border-radius: 15px;
+	background-color: rgba(0,0,0,0.1);
+	box-shadow: inset 0px 0px 10px rgba(0,0,0,0.4);
+	border: 3px solid rgba(0,0,0,0.4);
+	margin: 5px;
+	float: left;
+}
+.board_space:hover {
+	border: 3px dashed @ochre;
+}
+
+.piece {
+	cursor: move;
+	box-shadow: 0px 0px 15px rgba(0,0,0,0.5);
+	float: right;
+}
+
+.chosen {
+	box-shadow: 0px 0px 5px 10px @ochre;
+}
+
+.p_big{
+	width: 84px;
+	height: 84px;
+	margin: 10px;
+}
+
+.p_small {
+	width: 64px;
+	height: 64px;
+	margin: 20px;
+}
+
+.p_dark {
+	background-color: @dark_brown;
+}
+
+.p_light {
+	background-color: @beige;
+}
+
+.p_square {
+	border-radius: 10px;
+}
+
+.p_circle {
+	border-radius: 50%;
+}
+
+.hole {
+	display: inline-block;
+	width: 30px;
+	height: 30px;
+	border-radius: 50%;
+	background-color: rgba(0,0,0,0.7);
+}
