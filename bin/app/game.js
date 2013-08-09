@@ -1,8 +1,9 @@
-var TURN_PLAYER = 1;
-var TURN_AI = 0;
-
-var game_over = false;
-var current_turn = TURN_AI;
+// Set game state var and constants
+var game_state = "";
+var AI_PICK = 0;
+var AI_PLAY = 1;
+var PLAYER_PICK = 2;
+var PLAYER_PLAY = 3;
 
 var create_board = function () {
 	'use strict';
@@ -15,8 +16,10 @@ var create_board = function () {
 };
 
 var Board = function () {
+	'use strict';
+
 	// Board-related variables
-	var lines = new Object();
+	var lines = {};
 	lines.col1 = [0,4,8,12];
 	lines.col2 = [1,5,9,13];
 	lines.col3 = [2,6,10,14];
@@ -32,37 +35,42 @@ var Board = function () {
 
 	this.check_line = function (line) {
 
-		var pieces_to_check = new Array();
+		var pieces_to_check = [];
 
 		for (var i = 0; i < 4 ; i++) {
 			var p = board["space_" + line[i]];
 			if (board.hasOwnProperty('space_' + line[i])) {
 				pieces_to_check.push(p);
 				// console.log("Pushing " + p + " from [space_" + line[i] + "]");
-			};
+			}
 		}
 		// console.log(pieces_to_check);
 		// console.log(pieces_to_check[0].attrs);
-		if (pieces_to_check.length == 4) {
-			for (var i = 0; i < 4 ; i++){
-				if (pieces_to_check[0].attrs[i] == pieces_to_check[1].attrs[i] &&
-					pieces_to_check[1].attrs[i] == pieces_to_check[2].attrs[i] &&
-					pieces_to_check[2].attrs[i] == pieces_to_check[3].attrs[i]) {
-				return true;
-				}
+		if (pieces_to_check.length === 4) {
+			for (var j = 0; j < 4 ; j++){
+				if (pieces_to_check[0].attrs[j] === pieces_to_check[1].attrs[j] &&
+					pieces_to_check[1].attrs[j] === pieces_to_check[2].attrs[j] &&
+					pieces_to_check[2].attrs[j] === pieces_to_check[3].attrs[j]) {
+					return true;
 			}
 		}
 		return false;
+	}
+
+	this.space_empty = function (ID) {
+		return !this.hasOwnProperty("space_" + ID);
 	};
 
-	this.check_win = function () {
-		for (line_name in lines) {
+};
+
+this.check_win = function () {
+	for (var line_name in lines) {
 			// console.log(line_name);
-			if (this.check_line(lines[line_name])) { return true };
+			if (this.check_line(lines[line_name])) { return true; }
 		}
 		return false;
 	};
-}
+};
 
 
 var Piece = function (id, big, dark, square, solid) {
@@ -104,17 +112,25 @@ var Piece = function (id, big, dark, square, solid) {
 	}
 };
 
+
+var get_piece_by_ID = function (ID) {
+	console.log("Searching for piece " + ID + " in remaining_pieces...");
+	for (var i = 0; i<remaining_pieces.length; i++){
+		if (remaining_pieces[i].ID == ID) {
+			console.log("Piece " + ID + " returned.");
+			return remaining_pieces[i];
+		}
+	}
+};
+
+var remove_from_remaining = function (ID) {
+
+};
+
 var choose_piece = function ($piece) {
 	'use strict';
 	$piece.addClass('chosen');
 };
-
-// var place_piece = function (targetSquare, pieceID) {
-// 	'use strict';
-// 	$( this ).append( $('#' + pieceID) );
-// 	$('.chosen').removeClass('chosen');
-// 	ai_turn();
-// };
 
 var pieces = [];
 var remaining_pieces = [];
@@ -149,16 +165,21 @@ var draw_sideboard = function () {
 };
 
 var ai_pick_piece = function () {
+	'use strict';
+	game_state = AI_PICK;
 	console.log("Game won: " + board.check_win());
 	var random_choice = Math.floor(Math.random()*remaining_pieces.length);
 	choose_piece( $( '#' +  remaining_pieces[random_choice].ID) );
 	console.log("Piece " + random_choice + " chosen.");
-	console.log("Choose where to place this piece.");
-}
+	player_place_piece();
+};
 
 var player_place_piece = function () {
+	'use strict';
+	game_state = PLAYER_PLAY;
+	console.log("Choose where to place this piece.");
 	$('.board_space').click( function () {
-		if (!$( this ).children().hasClass('piece')) {
+		if (!$( this ).children().hasClass('piece') && game_state == PLAYER_PLAY) {
 			$( this ).append( $('.chosen') );
 			var target_square = $( this ).attr('id');
 			console.log(target_square);
@@ -172,26 +193,70 @@ var player_place_piece = function () {
 					board[target_square] = remaining_pieces.splice(i, 1)[0];
 					console.log("Piece " + placed_id + " removed from remaining_pieces array.");
 				}
-			};
-			ai_pick_piece();
-		} else { console.log ( "Space occupied." ) };
-
+			}
+			player_pick_piece();
+		}
 	});
+	$('.board_space').hover(
+		function () {
+			if (game_state == PLAYER_PLAY) { $(this).addClass('board_space_hover'); }
+		},
+		function () {
+			$(this).removeClass('board_space_hover');
+		}
+	);
 };
 
 var player_pick_piece = function () {
-	$
-}
+	game_state = PLAYER_PICK;
+	console.log("Choose which piece your opponent must place.");
+	$('.sideboard > .piece').hover(
+		function () {
+			if (game_state == PLAYER_PICK) {$(this).addClass('hoverglow');}
+		},
+		function () {
+			if (game_state == PLAYER_PICK) {$(this).removeClass('hoverglow');}
+		}
+	);
+	$('.sideboard > .piece').click(
+		function () {
+			if (game_state == PLAYER_PICK) {
+				$(this).removeClass('hoverglow');
+				var piece_ID = $(this).attr('id');
+				chosen_piece = get_piece_by_ID(piece_ID);
+				ai_play_piece();
+			}
+		});
+};
+
+var chosen_piece = null;
+
+var ai_play_piece = function () {
+	game_state = AI_PLAY;
+	console.log("AI is playing...");
+
+	var chosen_space = null;
+	var space_found = false;
+	while (!space_found) {
+		console.log("AI searching...");
+		chosen_space = Math.floor(Math.random()*16);
+		if (board.space_empty(chosen_space)) {
+			$('#space_' + chosen_space).append(chosen_piece.$pieceDiv)
+			space_found = true;
+			ai_pick_piece();
+		}
+	}	
+};
 
 var board = new Board();
 
 // Initialize game
 $(document).ready(function () {
+	'use strict';
 	create_board();
 	fill_sideboard();
 	draw_sideboard();
 
 	// Main loop
 	ai_pick_piece();
-	player_place_piece();
 });
